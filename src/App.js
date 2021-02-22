@@ -1,19 +1,16 @@
 import logo from './logo.svg';
 import './App.css';
-import { Board, Square } from './Board.js';
+import { LogInControl } from './Login.js'
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 const socket = io();
 
 function App() {
-    
+  const [isLoggedIn, setLoggedIn] = useState(false);
+  
   return (
-    <div>
-      <div className="board">
-            <Board />
-        </div>
-    </div>
+    <LoginControl isLoggedIn={isLoggedIn} setLoggedin={setLoggedIn}/>
   );
 }
 
