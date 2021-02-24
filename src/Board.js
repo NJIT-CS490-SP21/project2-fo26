@@ -6,48 +6,54 @@ const socket = io(); // Connects to socket connection
 
 export const Square = (props) => {
     const onClickBox = () => {
-        let newBoard = [...props.Board]
-        
-        if (newBoard[props.index] == 'X')
-            newBoard[props.index] = 'O'
-        else
-            newBoard[props.index] = 'X'
-            
-        props.setBoard(newBoard)
-        
-        socket.emit('move', {
-            index: props.index,
-            player: newBoard[props.index]
-        });
+        props.handleBoardChange(props.index)
     }
     
     return (
         <div className="box" onClick={onClickBox}>
             {props.value}
         </div>
-    )
+    );
 }
 
 
 export const Board = () => {
     const [Board, setBoard] = useState(['','','','','','','','','']);
+    
     useEffect(() => {
         socket.on('move', (data) => {
           console.log(data);
+          
           setBoard((prevBoard) => {
             let newBoard = [...prevBoard]
             newBoard[data.index] = data.player
             return newBoard
           });
-        })
-    }, ['','','','','','','','','']);
+        });
+    }, []);
+    
+    const handleBoardChange = (index) => {
+        let newBoard = [...Board];
+        
+        if (newBoard[index] == 'X')
+            newBoard[index] = 'O';
+        else
+            newBoard[index] = 'X';
+            
+        setBoard(newBoard);
+        
+        socket.emit('move', {
+            index: index,
+            player: newBoard[index]
+        });
+    }
     
     return (
         <div className="board">
-            {Board.map((squareVal, index) => 
+            {Board.map((value, index) => 
                 <Square 
-                    Board={Board} setBoard={setBoard} 
-                    value={squareVal} index={index} 
+                    handleBoardChange={handleBoardChange}
+                    value={value} index={index} 
                 />
             )}
         </div>

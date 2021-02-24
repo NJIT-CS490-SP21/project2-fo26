@@ -1,25 +1,67 @@
 import React from 'react';
 import { Board } from './Board.js'
+import { useState, useEffect, useRef } from 'react';
+import io from 'socket.io-client';
 
-export const LogInControl = (props) => {
-    const ToggleLogIn = () => {
-        props.setLoggedIn((prevState) => !prevState);
+const socket = io();
+export const LogInControl = () => {
+    const [isLoggedIn, setLoggedIn] = useState(false);
+    const [user, setUser] = useState({});
+    
+    useEffect(() => {
+        socket.on('login', (data) => {
+            // Show the user the board once
+            // the server sends back their user data
+            setLoggedIn(true);
+            setUser(data);
+        });
+    }, []);
+    
+    const handleLogIn = (username) => {
+        // Send the server the player's desired username,
+        // and get the player's id, spectator status, and
+        // possible assigned letter (X or O) back
+        socket.emit('login', {
+            username: username
+        });
     }
     
-    if (props.isLoggedIn) {
+    const handleLogOut = () => {
+        setLoggedIn(false);
+    }
+    
+    if (isLoggedIn) {
         return (
             <div>
+                <h1>Hi {user['username']}</h1>
+                {user['spectator'] ? <h1>You're spectating</h1> : <h1>You're player {user['player']}</h1>}
                 <Board/>
-                <button onClick={ToggleLogIn}>Logout</button>
+                <button onClick={handleLogOut}>Log out</button>
             </div>
         );
     }
     else {
         return (
-            <div>
-                <input placeholder="Enter your username"/>
-                <button onClick={ToggleLogIn}>Submit</button>
-            </div>
+            <NotLoggedIn handleLogIn={handleLogIn}/>
         );
     }
+}
+
+const NotLoggedIn = (props) => {
+    const inputRef = useRef();
+    
+    const onLogInClick = () => {
+        if (inputRef.current.value !== '') {
+            const username = inputRef.current.value;
+            props.handleLogIn(username);
+        }
+    }
+    
+    return (
+        <div>
+            <h1>Enter your username: </h1>
+            <input ref={inputRef} type="text"/>
+            <button onClick={onLogInClick}>Log in</button>
+        </div>
+    );
 }
