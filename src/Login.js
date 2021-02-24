@@ -14,6 +14,7 @@ export const LogInControl = () => {
             // the server sends back their user data
             setLoggedIn(true);
             setUser(data);
+            console.log(data);
         });
     }, []);
     
@@ -24,10 +25,18 @@ export const LogInControl = () => {
         socket.emit('login', {
             username: username
         });
+        
+        // TODO: FIX THIS
+        socket.emit('getBoard', {})
     }
     
     const handleLogOut = () => {
         setLoggedIn(false);
+        // Notify the server that this
+        // user is logging out so their
+        // entry can be deleted from the online players
+        // list
+        socket.emit('logout', user);
     }
     
     if (isLoggedIn) {
@@ -35,7 +44,7 @@ export const LogInControl = () => {
             <div>
                 <h1>Hi {user['username']}</h1>
                 {user['spectator'] ? <h1>You're spectating</h1> : <h1>You're player {user['player']}</h1>}
-                <Board/>
+                <Board user={user}/>
                 <button onClick={handleLogOut}>Log out</button>
             </div>
         );
