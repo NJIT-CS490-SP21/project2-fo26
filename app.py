@@ -29,7 +29,7 @@ def index(filename):
 @socketio.on('connect')
 def on_connect():
     print('User connected!')
-
+    
 # When a client disconnects from this Socket connection, this function is run
 @socketio.on('disconnect')
 def on_disconnect():
@@ -49,7 +49,7 @@ def on_move(data):
 
 # Send the current board info to a newly logged in user
 @socketio.on('getBoard')
-def on_get_board(data):
+def on_getBoard(data):
     # Privately send the current board information to the user
     # that just joined
     socketio.emit('getBoard', board, room=request.sid)

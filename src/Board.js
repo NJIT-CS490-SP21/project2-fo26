@@ -19,6 +19,7 @@ export const PlayerSquare = (props) => {
 
 export const Board = (props) => {
     const [Board, setBoard] = useState(['','','','','','','','','']);
+    
     const [isXTurn, setXTurn] = useState(true);
     
     useEffect(() => {
@@ -34,11 +35,6 @@ export const Board = (props) => {
           
           //Swap turns once the opponent has moved
           setXTurn((prevTurn) => !prevTurn);
-        });
-        
-        socket.on('getBoard', (data) => {
-            setBoard(data);
-            console.log(data)
         });
     }, []);
     

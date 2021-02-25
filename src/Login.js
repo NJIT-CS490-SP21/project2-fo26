@@ -7,6 +7,7 @@ const socket = io();
 export const LogInControl = () => {
     const [isLoggedIn, setLoggedIn] = useState(false);
     const [user, setUser] = useState({});
+    let currentBoard = [];
     
     useEffect(() => {
         socket.on('login', (data) => {
@@ -25,9 +26,8 @@ export const LogInControl = () => {
         socket.emit('login', {
             username: username
         });
-        
-        // TODO: FIX THIS
-        socket.emit('getBoard', {})
+        // // TODO: FIX THIS
+        // socket.emit('getBoard', {})
     }
     
     const handleLogOut = () => {
@@ -39,21 +39,29 @@ export const LogInControl = () => {
         socket.emit('logout', user);
     }
     
+    let Greeting;
     if (isLoggedIn) {
-        return (
+        Greeting = (
             <div>
                 <h1>Hi {user['username']}</h1>
                 {user['spectator'] ? <h1>You're spectating</h1> : <h1>You're player {user['player']}</h1>}
-                <Board user={user}/>
                 <button onClick={handleLogOut}>Log out</button>
             </div>
         );
     }
     else {
-        return (
-            <NotLoggedIn handleLogIn={handleLogIn}/>
-        );
+        Greeting = <NotLoggedIn handleLogIn={handleLogIn}/>;
     }
+    
+    // Have a seperate greeting for logged in/out users,
+    // but use the same board otherwise there will be issues in
+    // syncing the board once a logged out users signs in
+    return (
+        <div>
+            {Greeting}
+            <Board user={user}/>
+        </div>
+    )
 }
 
 const NotLoggedIn = (props) => {
