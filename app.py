@@ -13,12 +13,16 @@ socketio = SocketIO(
     json=json,
     manage_session=False
 )
-
-logged_in_users = {}
+# TODO: Keep state on server of whos turn it is
+# Find a way to transmit board data to player once they login 
+# and update their own board with that data
+# maybe socket.emit('getboard'), socket.on('getboard') setBoard((prevBoard) => newBoard = prevBoard, map getboard data to update newBoard)
+logged_in_users = []
 user_count = 0
 # Keep a copy of the game board so that
 # newly joined players will get the correct info
 board = ['','','','','','','','','']
+isXNext = True
 
 @app.route('/', defaults={"filename": "index.html"})
 @app.route('/<path:filename>')
@@ -39,20 +43,26 @@ def on_disconnect():
 
 @socketio.on('move')
 def on_move(data):
+    global isXNext
+    # Update next turn information
+    isXNext = not isXNext
+    
     print(str(data))
     # Update the server's board info to include
     # the move just made
     board[data['index']] = data['player']
-    print(board)
     socketio.emit('move', data, broadcast=True, include_self=False)
 
 
 # Send the current board info to a newly logged in user
 @socketio.on('getBoard')
-def on_getBoard(data):
+def on_get_board():
     # Privately send the current board information to the user
     # that just joined
-    socketio.emit('getBoard', board, room=request.sid)
+    global board
+    global isXNext
+    boardObj = {'board': board, 'isXNext': isXNext}
+    socketio.emit('getBoard', boardObj, room=request.sid)
     
     
 @socketio.on('login')
@@ -84,7 +94,7 @@ def on_login(data):
     # Create an entry in the logged_in_users array
     # where the key is the user's id and the value
     # is their info
-    logged_in_users[user_count] = user_info
+    logged_in_users.append(user_info)
     
     print(logged_in_users)
    
@@ -99,9 +109,23 @@ def on_logout(data):
     # Delete the entry of the logged out user
     # according to their user id
     user_id = data['user_id']
-    del logged_in_users[user_id]
-    print(logged_in_users)
+    new_logged_in_users = []
+    for user in logged_in_users:
+        if user['user_id'] != user_id:
+            new_logged_in_users.append(user)
     
+    logged_in_users = new_logged_in_users
+    
+    #del logged_in_users[user_id]
+    print(logged_in_users)
+    # Broadcast an updated logged_in_users to all clients once
+    # a player has logged out
+    socketio.emit('getLoggedInUsers', logged_in_users, broadcast=True, include_self=True)
+
+@socketio.on('getLoggedInUsers')
+def on_get_users():
+    global logged_in_users
+    socketio.emit('getLoggedInUsers', logged_in_users, broadcast=True, include_self=True)
 
 socketio.run(
     app,

@@ -18,10 +18,9 @@ export const PlayerSquare = (props) => {
 
 
 export const Board = (props) => {
-    const [Board, setBoard] = useState(['','','','','','','','','']);
-    
+    const [Board, setBoard] = useState(props.b4JoinedBoard);
     const [isXTurn, setXTurn] = useState(true);
-    
+  
     useEffect(() => {
         socket.on('move', (data) => {
           console.log(data);
@@ -37,6 +36,18 @@ export const Board = (props) => {
           setXTurn((prevTurn) => !prevTurn);
         });
     }, []);
+    
+    // Set the board to include moves made before
+    // the user joined
+    useEffect(() => {
+         setBoard(props.b4JoinedBoard);
+    }, [props.b4JoinedBoard]);
+    
+    // Get the value of who should go next,
+    // based on moves before the user joined
+    useEffect(() => {
+         setXTurn(props.isXNext);
+    }, [props.isXNext]);
     
     const handleBoardChange = (index) => {
         let newBoard = [...Board];

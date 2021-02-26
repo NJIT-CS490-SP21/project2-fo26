@@ -4,18 +4,21 @@ import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
 const socket = io();
-export const LogInControl = () => {
-    const [isLoggedIn, setLoggedIn] = useState(false);
-    const [user, setUser] = useState({});
-    let currentBoard = [];
+export const LogInControl = (props) => {
+    //const [isLoggedIn, setLoggedIn] = useState(false);
+    //
     
     useEffect(() => {
         socket.on('login', (data) => {
             // Show the user the board once
             // the server sends back their user data
-            setLoggedIn(true);
-            setUser(data);
+            props.setLoggedIn(true);
+            props.setUser(data);
             console.log(data);
+            // Get a list of all currently logged in users
+            // from the server after this client has successfully
+            // logged in
+            socket.emit('getLoggedInUsers');
         });
     }, []);
     
@@ -31,20 +34,21 @@ export const LogInControl = () => {
     }
     
     const handleLogOut = () => {
-        setLoggedIn(false);
+        props.setLoggedIn(false);
         // Notify the server that this
         // user is logging out so their
         // entry can be deleted from the online players
         // list
-        socket.emit('logout', user);
+        socket.emit('logout', props.user);
     }
     
     let Greeting;
-    if (isLoggedIn) {
+    
+    if (props.isLoggedIn) {
         Greeting = (
             <div>
-                <h1>Hi {user['username']}</h1>
-                {user['spectator'] ? <h1>You're spectating</h1> : <h1>You're player {user['player']}</h1>}
+                <h1>Hi {props.user['username']}</h1>
+                {props.user['spectator'] ? <h1>You're spectating</h1> : <h1>You're player {props.user['player']}</h1>}
                 <button onClick={handleLogOut}>Log out</button>
             </div>
         );
@@ -56,12 +60,7 @@ export const LogInControl = () => {
     // Have a seperate greeting for logged in/out users,
     // but use the same board otherwise there will be issues in
     // syncing the board once a logged out users signs in
-    return (
-        <div>
-            {Greeting}
-            <Board user={user}/>
-        </div>
-    )
+    return Greeting;
 }
 
 const NotLoggedIn = (props) => {
