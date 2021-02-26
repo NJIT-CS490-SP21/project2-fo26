@@ -5,8 +5,6 @@ import io from 'socket.io-client';
 
 const socket = io();
 export const LogInControl = (props) => {
-    //const [isLoggedIn, setLoggedIn] = useState(false);
-    //
     
     useEffect(() => {
         socket.on('login', (data) => {
@@ -29,8 +27,6 @@ export const LogInControl = (props) => {
         socket.emit('login', {
             username: username
         });
-        // // TODO: FIX THIS
-        // socket.emit('getBoard', {})
     }
     
     const handleLogOut = () => {

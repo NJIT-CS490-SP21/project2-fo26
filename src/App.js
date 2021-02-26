@@ -19,10 +19,11 @@ function App() {
   
   useEffect(() => {
     socket.on('getLoggedInUsers', (data) => {
-      console.log(data);
-      setAllUsers(data);
+      console.log(data['loggedInUsers']);
+      setAllUsers(data['loggedInUsers']);
       // Ask for current board information from server on log in
-      socket.emit('getBoard');
+      // Also let it know if the board should be reset due to a player logging out
+      socket.emit('getBoard', {resetBoard: data['resetBoard']});
     });
   }, []);
   
@@ -30,17 +31,10 @@ function App() {
     socket.on('getBoard', (data) => {
         console.log(data);
         setBoard(data['board']);
-        setNext(data['isXNext'])
+        setNext(data['isXNext']);
+        // TODO: Socket emit 'checkRoles' to see if the user needs to change their role
     })
   }, [])
-  
-  // useEffect(() => {
-  //     window.addEventListener('beforeunload', (ev) => {
-  //       ev.preventDefault();
-  //       socket.emit('logout', user);
-  //     });
-      
-  // })
   
   let gameScreen;
   

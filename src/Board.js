@@ -55,14 +55,9 @@ export const Board = (props) => {
         const playerLetter = props.user['player']
         const isXTurnCopy = isXTurn;
         
-        if (!newBoard.includes('')) {
-            // There are no empty spaces and the
-            // game is over, so we check to see if anyone won
-            console.log('Placeholder');
-        }
-        // Check if player X tried to make a valid move
+        // Check if player tried to make a valid move
         // Also check if the spot they clicked on is empty
-        else if (playerLetter === 'X' && isXTurnCopy && newBoard[index] == '') {
+        if (playerLetter === 'X' && isXTurnCopy && newBoard[index] == '') {
             // The move is valid
             newBoard[index] = 'X';
             setXTurn(false);
@@ -78,6 +73,11 @@ export const Board = (props) => {
         }
         
         setBoard(newBoard);
+        
+        // Check if there are no empty spaces to calculate winner
+        if (!newBoard.includes('')) {
+            console.log('Placeholder');
+        }
         
         //Send back the move that was just made's information
         socket.emit('move', {

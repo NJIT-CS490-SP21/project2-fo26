@@ -13,12 +13,8 @@ socketio = SocketIO(
     json=json,
     manage_session=False
 )
-# TODO: Keep state on server of whos turn it is
-# Find a way to transmit board data to player once they login 
-# and update their own board with that data
-# maybe socket.emit('getboard'), socket.on('getboard') setBoard((prevBoard) => newBoard = prevBoard, map getboard data to update newBoard)
+
 logged_in_users = []
-user_count = 0
 # Keep a copy of the game board so that
 # newly joined players will get the correct info
 board = ['','','','','','','','','']
@@ -42,7 +38,17 @@ def on_disconnect():
     global logged_in_users
     # Remove the disconnected client's socket id from
     # the list of active rooms aka socket ids
+    res = {}
+    disconnect_user = {}
+    # Only execute if the user was logged in and had data sent
+    # to the server
     if request.sid in active_rooms:
+        # Find the disconnect user's data to
+        # see if they were Player X or O
+        for user in logged_in_users:
+            if user['user_id'] == request.sid:
+                disconnect_user = user
+                
         new_rooms = []
         for room in active_rooms:
             if room != request.sid:
@@ -53,14 +59,20 @@ def on_disconnect():
         new_logged_in_users = []
         for room in new_rooms:
             for user in logged_in_users:
-                if user['room_id'] == room:
+                if user['user_id'] == room:
                     new_logged_in_users.append(user)
-        
+                    
         logged_in_users = new_logged_in_users
         active_rooms = new_rooms
-    
+        
+        if 'player' in disconnect_user:
+            res = {'loggedInUsers': logged_in_users, 'resetBoard': True}
+        else:
+            res = {'loggedInUsers': logged_in_users, 'resetBoard': False}
+            
+        socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=False)
+        
     print('User disconnected!')
-    socketio.emit('getLoggedInUsers', logged_in_users, broadcast=True, include_self=False)
 
 @socketio.on('move')
 def on_move(data):
@@ -77,12 +89,23 @@ def on_move(data):
 
 # Send the current board info to a newly logged in user
 @socketio.on('getBoard')
-def on_get_board():
-    # Privately send the current board information to the user
-    # that just joined
+def on_get_board(data):
     global board
     global isXNext
+    
+    if 'resetBoard' in data:
+        if data['resetBoard']:
+            # Reset turn and board information to initial states
+            # if resetBoard is true
+            board = ['','','','','','','','','']
+            isXNext = True
+        
+    # Privately send the current board information to the user
+    # that just joined on logins
+    # On logouts, this information is treated as a broadcast to all
+    # users
     boardObj = {'board': board, 'isXNext': isXNext}
+        
     socketio.emit('getBoard', boardObj, room=request.sid)
     
     
@@ -115,8 +138,6 @@ def on_login(data):
     user_info.update(data)
     active_rooms.append(request.sid)
     logged_in_users.append(user_info)
-    
-    print(logged_in_users)
    
    # Send the calculated user info privately to the recently logged in client
    # request.sid gets the id of the sender client, and sends the data back
@@ -126,6 +147,7 @@ def on_login(data):
 @socketio.on('logout')
 def on_logout(data):
     global logged_in_users
+    global board
     # Delete the entry of the logged out user
     # according to their user id
     user_id = data['user_id']
@@ -135,17 +157,22 @@ def on_logout(data):
             new_logged_in_users.append(user)
     
     logged_in_users = new_logged_in_users
+    res = {'loggedInUsers': logged_in_users, 'resetBoard': False}
     
-    #del logged_in_users[user_id]
-    print('LOGGED IN USERS: ' + str(logged_in_users))
+    if 'player' in data:
+        # A player logged out so the board must be reset
+        res['resetBoard'] = True
+        
     # Broadcast an updated logged_in_users to all clients once
     # a player has logged out
-    socketio.emit('getLoggedInUsers', logged_in_users, broadcast=True, include_self=True)
+    socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=False)
 
 @socketio.on('getLoggedInUsers')
 def on_get_users():
     global logged_in_users
-    socketio.emit('getLoggedInUsers', logged_in_users, broadcast=True, include_self=True)
+    res = {'loggedInUsers': logged_in_users, 'resetBoard': False}
+    
+    socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=True)
 
 socketio.run(
     app,
