@@ -34,6 +34,13 @@ function App() {
     })
   }, [])
   
+  // useEffect(() => {
+  //     window.addEventListener('beforeunload', (ev) => {
+  //       ev.preventDefault();
+  //       socket.emit('logout', user);
+  //     });
+      
+  // })
   
   let gameScreen;
   
@@ -48,12 +55,14 @@ function App() {
   else {
     gameScreen = (
       <div>
-      <DisplayUsers allUsers={allUsers}/>
-      <LogInControl 
-        user={user} setUser={setUser}
-        isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
-      />
-      <Board user={user} b4JoinedBoard={b4JoinedBoard} isXNext={isXNext}/>
+        <DisplayUsers allUsers={allUsers}/>
+        <LogInControl 
+          user={user} setUser={setUser}
+          isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+        />
+        <Board user={user} 
+          b4JoinedBoard={b4JoinedBoard} isXNext={isXNext}
+        />
       </div>
     )
   }

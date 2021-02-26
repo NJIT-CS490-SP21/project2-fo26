@@ -23,6 +23,7 @@ user_count = 0
 # newly joined players will get the correct info
 board = ['','','','','','','','','']
 isXNext = True
+active_rooms = []
 
 @app.route('/', defaults={"filename": "index.html"})
 @app.route('/<path:filename>')
@@ -37,9 +38,29 @@ def on_connect():
 # When a client disconnects from this Socket connection, this function is run
 @socketio.on('disconnect')
 def on_disconnect():
+    global active_rooms
+    global logged_in_users
+    # Remove the disconnected client's socket id from
+    # the list of active rooms aka socket ids
+    if request.sid in active_rooms:
+        new_rooms = []
+        for room in active_rooms:
+            if room != request.sid:
+                new_rooms.append(room)
+                
+        # Remove the entry in logged_in_users
+        # with the disconnected socket id
+        new_logged_in_users = []
+        for room in new_rooms:
+            for user in logged_in_users:
+                if user['room_id'] == room:
+                    new_logged_in_users.append(user)
+        
+        logged_in_users = new_logged_in_users
+        active_rooms = new_rooms
+    
     print('User disconnected!')
-    # TODO: Add logged_in_users clean up if
-    # user exits browser without logging out first
+    socketio.emit('getLoggedInUsers', logged_in_users, broadcast=True, include_self=False)
 
 @socketio.on('move')
 def on_move(data):
@@ -68,9 +89,10 @@ def on_get_board():
 @socketio.on('login')
 def on_login(data):
     global logged_in_users
-    global user_count
-    user_count += 1
-    user_info = {'user_id': user_count}
+    global active_rooms
+    
+    # Make the user's unique id their socket id
+    user_info = {'user_id': request.sid}
     # Get the count of players currently online
     num_players = len(logged_in_users)
     
@@ -91,9 +113,7 @@ def on_login(data):
         user_info.update({'spectator': True})
         
     user_info.update(data)
-    # Create an entry in the logged_in_users array
-    # where the key is the user's id and the value
-    # is their info
+    active_rooms.append(request.sid)
     logged_in_users.append(user_info)
     
     print(logged_in_users)
@@ -117,7 +137,7 @@ def on_logout(data):
     logged_in_users = new_logged_in_users
     
     #del logged_in_users[user_id]
-    print(logged_in_users)
+    print('LOGGED IN USERS: ' + str(logged_in_users))
     # Broadcast an updated logged_in_users to all clients once
     # a player has logged out
     socketio.emit('getLoggedInUsers', logged_in_users, broadcast=True, include_self=True)
