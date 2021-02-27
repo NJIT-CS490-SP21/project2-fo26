@@ -77,6 +77,7 @@ def on_disconnect():
 @socketio.on('move')
 def on_move(data):
     global isXNext
+    global board
     # Update next turn information
     isXNext = not isXNext
     
@@ -84,6 +85,7 @@ def on_move(data):
     # Update the server's board info to include
     # the move just made
     board[data['index']] = data['player']
+    data['newBoard'] = board
     socketio.emit('move', data, broadcast=True, include_self=False)
 
 
@@ -99,14 +101,17 @@ def on_get_board(data):
             # if resetBoard is true
             board = ['','','','','','','','','']
             isXNext = True
-        
-    # Privately send the current board information to the user
-    # that just joined on logins
-    # On logouts, this information is treated as a broadcast to all
-    # users
-    boardObj = {'board': board, 'isXNext': isXNext}
-        
-    socketio.emit('getBoard', boardObj, room=request.sid)
+            boardObj = {'board': board, 'isXNext': isXNext, 'resetGame': True}
+            # Broadcast to all users if board is reset
+            socketio.emit('getBoard', boardObj, broadcast=True, include_self=True)
+        else:
+            # Privately send the current board information to the user
+            # that just joined on logins
+            # On logouts, this information is treated as a broadcast to all
+            # users
+            boardObj = {'board': board, 'isXNext': isXNext, 'resetGame': False}
+                
+            socketio.emit('getBoard', boardObj, room=request.sid)
     
     
 @socketio.on('login')
@@ -147,10 +152,12 @@ def on_login(data):
 @socketio.on('logout')
 def on_logout(data):
     global logged_in_users
-    global board
+    global active_rooms
     # Delete the entry of the logged out user
     # according to their user id
     user_id = data['user_id']
+    active_rooms.remove(user_id)
+    
     new_logged_in_users = []
     for user in logged_in_users:
         if user['user_id'] != user_id:
@@ -174,6 +181,10 @@ def on_get_users():
     
     socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=True)
 
+@socketio.on('winner')
+def on_winner(data):
+    socketio.emit('winner', data, broadcast=True, include_self=True)
+    
 socketio.run(
     app,
     host=os.getenv('IP', '0.0.0.0'),

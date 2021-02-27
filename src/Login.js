@@ -42,9 +42,8 @@ export const LogInControl = (props) => {
     
     if (props.isLoggedIn) {
         Greeting = (
-            <div>
+            <div id="logout">
                 <h1>Hi {props.user['username']}</h1>
-                {props.user['spectator'] ? <h1>You're spectating</h1> : <h1>You're player {props.user['player']}</h1>}
                 <button onClick={handleLogOut}>Log out</button>
             </div>
         );
@@ -70,7 +69,7 @@ const NotLoggedIn = (props) => {
     }
     
     return (
-        <div>
+        <div id="login">
             <h1>Enter your username: </h1>
             <input ref={inputRef} type="text"/>
             <button onClick={onLogInClick}>Log in</button>

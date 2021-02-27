@@ -34,10 +34,14 @@
 	display: grid; /* Enables CSS Grid */ 
 	grid-template-columns: repeat(3, 1fr); /* Total horizontal space broken into 3 columns */
   grid-template-rows: repeat(3, 1fr); /* Total vertical space broken into 3 rows */
+  margin-left: auto;
+  margin-right: auto;
+  color: white;
 }
 
 .box {
-  border: 1px solid black; /* Shows the lines in the CSS grid */
+  border: 2px solid white; /* Shows the lines in the CSS grid */
+  font-size: 3em;
 }
 
 @keyframes App-logo-spin {

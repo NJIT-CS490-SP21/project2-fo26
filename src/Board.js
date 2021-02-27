@@ -32,6 +32,7 @@ export const Board = (props) => {
             return newBoard
           });
           
+          //setBoard(data['newBoard'])
           //Swap turns once the opponent has moved
           setXTurn((prevTurn) => !prevTurn);
         });
@@ -74,18 +75,51 @@ export const Board = (props) => {
         
         setBoard(newBoard);
         
-        // Check if there are no empty spaces to calculate winner
+        // There is a draw as the board is full but no winner
         if (!newBoard.includes('')) {
             console.log('Placeholder');
         }
-        
-        //Send back the move that was just made's information
-        socket.emit('move', {
-            index: index,
-            player: newBoard[index]
-        });
+        else {
+            // Check if there is a winner with the current board
+            const winner = calculateWinner(newBoard);
+            if (winner) {
+                // End the game
+                socket.emit('winner', {winner: winner});
+                socket.emit('move', {
+                    index: index,
+                    player: newBoard[index]
+                });
+            }
+            else {
+                // Send back the move that was just made's information
+                socket.emit('move', {
+                    index: index,
+                    player: newBoard[index]
+                });
+            }
+        }
     }
     
+    function calculateWinner(squares) {
+        const lines = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+        for (let i = 0; i < lines.length; i++) {
+            const [a, b, c] = lines[i];
+            if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+              return squares[a];
+            }
+        }
+      return null;
+    }
+
     if (props.user['spectator']) {
         // Return a non-clickable board
         // that still updates based on the players' moves
