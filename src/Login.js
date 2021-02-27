@@ -15,8 +15,12 @@ export const LogInControl = (props) => {
             console.log(data);
             // Get a list of all currently logged in users
             // from the server after this client has successfully
-            // logged in
-            socket.emit('getLoggedInUsers');
+            // logged in. Also, if the logged in player is going
+            // to be O or X, reset the board
+            if ('player' in data)
+                socket.emit('getLoggedInUsers', {'resetBoard': true});
+            else
+                socket.emit('getLoggedInUsers', {})
         });
     }, []);
     

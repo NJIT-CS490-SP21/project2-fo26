@@ -10,7 +10,7 @@ const socket = io();
 
 function App() {
   const [user, setUser] = useState({});
-  const [allUsers, setAllUsers] = useState([])
+  const [allUsers, setAllUsers] = useState([]);
   const [isLoggedIn, setLoggedIn] = useState(false);
   // The changes made to the board before the user joined
   // After the client gets this info from the server, this state will be updated
@@ -22,10 +22,6 @@ function App() {
     socket.on('getLoggedInUsers', (data) => {
       console.log(data['loggedInUsers']);
       setAllUsers(data['loggedInUsers']);
-      // If a player left reset the winner object back to empty
-      if (data['resetBoard']) {
-        setWinner({});
-      }
       // Ask for current board information from server on log in
       // Also let it know if the board should be reset due to a player logging out
       socket.emit('getBoard', {resetBoard: data['resetBoard']});
@@ -35,27 +31,29 @@ function App() {
   useEffect(() => {
     socket.on('getBoard', (data) => {
         console.log(data);
-        setBoard(data['board']);
         setNext(data['isXNext']);
-        if (data['resetGame'])
+        setBoard(data['board']);
+        // If a player left reset the winner object back to empty
+        if (data['resetBoard']) {
+          setNext(true);
           setWinner({});
+        }
         // TODO: Socket emit 'checkRoles' to see if the user needs to change their role
-    })
-  }, [])
+    });
+  }, []);
   
   useEffect(() => {
     socket.on('winner', (data) => {
         console.log(data);
         setWinner(data);
-    })
-  }, [])
+        setNext(true);
+        setBoard(data['newBoard']);
+    });
+  }, []);
   
   const restartGame = () => {
     if (!user['spectator']) {
-      socket.emit('getBoard', {resetBoard: true, restartGame: true});
-      //TODO CHECK FOR RESTART GAME ON GET BOARD TO HIDE RESTART GAME BTN
-      // ALSO STOP SPECTATOR FROM RESTARTING GAME
-      setWinner({});
+      socket.emit('getBoard', {resetBoard: true});
     }
     else
       return null;
@@ -69,13 +67,13 @@ function App() {
         user={user} setUser={setUser}
         isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
       />  
-    )
+    );
   }
   else {
     gameScreen = (
       <div id="gameScreen">
-        {Object.keys(winner).length != 0 ? 
-          <div id="restartGame"><h1>PLAYER {winner['winner']} WON!</h1>
+        {Object.keys(winner).length !== 0 ? 
+          <div id="restartGame"><h1>{winner['winner']}</h1>
           <button onClick={restartGame}>Players click here to restart</button></div> : null}
         <DisplayUsers allUsers={allUsers}/>
         <LogInControl 
@@ -86,7 +84,7 @@ function App() {
           b4JoinedBoard={b4JoinedBoard} isXNext={isXNext}
         />
       </div>
-    )
+    );
   }
   
   return gameScreen;

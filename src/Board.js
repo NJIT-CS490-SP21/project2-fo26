@@ -38,17 +38,13 @@ export const Board = (props) => {
         });
     }, []);
     
+    
     // Set the board to include moves made before
     // the user joined
     useEffect(() => {
          setBoard(props.b4JoinedBoard);
-    }, [props.b4JoinedBoard]);
-    
-    // Get the value of who should go next,
-    // based on moves before the user joined
-    useEffect(() => {
          setXTurn(props.isXNext);
-    }, [props.isXNext]);
+    }, [props.b4JoinedBoard]);
     
     const handleBoardChange = (index) => {
         let newBoard = [...Board];
@@ -77,15 +73,19 @@ export const Board = (props) => {
         
         // There is a draw as the board is full but no winner
         if (!newBoard.includes('')) {
-            console.log('Placeholder');
+            socket.emit('winner', {
+                    winner: 'It\'s a Draw!',
+                    index: index,
+                    player: newBoard[index]
+                });
         }
         else {
             // Check if there is a winner with the current board
             const winner = calculateWinner(newBoard);
             if (winner) {
                 // End the game
-                socket.emit('winner', {winner: winner});
-                socket.emit('move', {
+                socket.emit('winner', {
+                    winner: 'Player ' + winner + ' won!',
                     index: index,
                     player: newBoard[index]
                 });

@@ -101,7 +101,7 @@ def on_get_board(data):
             # if resetBoard is true
             board = ['','','','','','','','','']
             isXNext = True
-            boardObj = {'board': board, 'isXNext': isXNext, 'resetGame': True}
+            boardObj = {'board': board, 'isXNext': isXNext, 'resetBoard': True}
             # Broadcast to all users if board is reset
             socketio.emit('getBoard', boardObj, broadcast=True, include_self=True)
         else:
@@ -109,7 +109,7 @@ def on_get_board(data):
             # that just joined on logins
             # On logouts, this information is treated as a broadcast to all
             # users
-            boardObj = {'board': board, 'isXNext': isXNext, 'resetGame': False}
+            boardObj = {'board': board, 'isXNext': isXNext, 'resetBoard': False}
                 
             socketio.emit('getBoard', boardObj, room=request.sid)
     
@@ -175,14 +175,20 @@ def on_logout(data):
     socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=False)
 
 @socketio.on('getLoggedInUsers')
-def on_get_users():
+def on_get_users(data):
     global logged_in_users
-    res = {'loggedInUsers': logged_in_users, 'resetBoard': False}
+    if 'resetBoard' in data:
+        res = {'loggedInUsers': logged_in_users, 'resetBoard': True}
+    else:
+        res = {'loggedInUsers': logged_in_users, 'resetBoard': False}
     
     socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=True)
 
 @socketio.on('winner')
 def on_winner(data):
+    global board
+    board[data['index']] = data['player']
+    data['newBoard'] = board
     socketio.emit('winner', data, broadcast=True, include_self=True)
     
 socketio.run(
