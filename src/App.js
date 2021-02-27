@@ -30,12 +30,12 @@ function App() {
   
   useEffect(() => {
     socket.on('getBoard', (data) => {
-        console.log(data);
+        //console.log(data);
         setNext(data['isXNext']);
         setBoard(data['board']);
         // If a player left reset the winner object back to empty
         if (data['resetBoard']) {
-          setNext(true);
+          //setNext(true);
           setWinner({});
         }
         // TODO: Socket emit 'checkRoles' to see if the user needs to change their role
@@ -46,7 +46,7 @@ function App() {
     socket.on('winner', (data) => {
         //console.log(data);
         setWinner(data);
-        setNext(true);
+        //setNext(true);
         setBoard(data['newBoard']);
     });
   }, []);

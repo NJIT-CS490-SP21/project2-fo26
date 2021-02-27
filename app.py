@@ -70,7 +70,8 @@ def on_disconnect():
         else:
             res = {'loggedInUsers': logged_in_users, 'resetBoard': False}
             
-        socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=False)
+        # Causing issues
+        #socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=False)
         
     print('User disconnected!')
 
@@ -167,9 +168,9 @@ def on_logout(data):
     logged_in_users = new_logged_in_users
     res = {'loggedInUsers': logged_in_users, 'resetBoard': False}
     
-    if 'player' in data:
-        # A player logged out so the board must be reset
-        res['resetBoard'] = True
+   # if 'player' in data:
+   #     # A player logged out so the board must be reset
+   #     res['resetBoard'] = True
         
     # Broadcast an updated logged_in_users to all clients once
     # a player has logged out

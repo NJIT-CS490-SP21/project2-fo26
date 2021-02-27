@@ -38,7 +38,6 @@ export const Board = (props) => {
         });
     }, []);
     
-    
     // Set the board to include moves made before
     // the user joined
     useEffect(() => {
@@ -124,24 +123,18 @@ export const Board = (props) => {
     if (props.user['spectator'] || props.allUsers.length === 1 || Object.keys(props.winner).length !== 0) {
         // Return a non-clickable board
         // that still updates based on the players' moves
-        if (props.allUsers.length === 1) {
-            return (
-                <div>
-                <h1>Waiting for another player...</h1>
-                </div>   
-            )
-        }
-        else {
-            return (
-                <div className="board">
-                {Board.map((value, index) => 
-                     <div className="box">
-                        {value}
-                    </div>
-                )}
-                </div>   
-            )
-        }
+        return (
+            <div>
+            <div className="board">
+            {Board.map((value, index) => 
+                 <div className="box">
+                    {value}
+                </div>
+            )}
+            </div>   
+            <h2>Moves may take a few seconds to load...</h2>
+            </div>
+        )
     }
     else {
         return (
@@ -155,6 +148,7 @@ export const Board = (props) => {
                     )}
                 </div>
                 <h1>X Goes First</h1>
+                <h2>Moves may take a few seconds to load...</h2>
             </div>
         )
     }

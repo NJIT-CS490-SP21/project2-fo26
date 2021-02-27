@@ -77,6 +77,7 @@ const NotLoggedIn = (props) => {
             <h1>Enter your username: </h1>
             <input ref={inputRef} type="text"/>
             <button onClick={onLogInClick}>Log in</button>
+            <h2>Logging in may take a few seconds...</h2>
         </div>
     );
 }
