@@ -86,6 +86,7 @@ def on_move(data):
     # the move just made
     board[data['index']] = data['player']
     data['newBoard'] = board
+    data['isXNext'] = isXNext
     socketio.emit('move', data, broadcast=True, include_self=False)
 
 

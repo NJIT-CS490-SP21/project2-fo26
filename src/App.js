@@ -20,7 +20,7 @@ function App() {
   
   useEffect(() => {
     socket.on('getLoggedInUsers', (data) => {
-      console.log(data['loggedInUsers']);
+      //console.log(data['loggedInUsers']);
       setAllUsers(data['loggedInUsers']);
       // Ask for current board information from server on log in
       // Also let it know if the board should be reset due to a player logging out
@@ -44,7 +44,7 @@ function App() {
   
   useEffect(() => {
     socket.on('winner', (data) => {
-        console.log(data);
+        //console.log(data);
         setWinner(data);
         setNext(true);
         setBoard(data['newBoard']);
@@ -70,10 +70,28 @@ function App() {
     );
   }
   else {
-    gameScreen = (
-      <div id="gameScreen">
-        {Object.keys(winner).length !== 0 ? 
-          <div id="restartGame"><h1>{winner['winner']}</h1>
+    if (user['spectator']) {
+      gameScreen = (
+        <div id="gameScreen">
+          {(Object.keys(winner).length !== 0) ? <h1>{winner['winner']}</h1> : null}
+          <DisplayUsers allUsers={allUsers}/>
+          <LogInControl 
+            user={user} setUser={setUser}
+            isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+          />
+          <Board user={user} 
+            b4JoinedBoard={b4JoinedBoard} isXNext={isXNext}
+            allUsers={allUsers}
+          />
+        </div>
+      );
+    }
+    
+    else {
+      gameScreen = (
+        <div id="gameScreen">
+        {(Object.keys(winner).length !== 0) ? 
+          <div><h1>{winner['winner']}</h1>
           <button onClick={restartGame}>Players click here to restart</button></div> : null}
         <DisplayUsers allUsers={allUsers}/>
         <LogInControl 
@@ -81,10 +99,13 @@ function App() {
           isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
         />
         <Board user={user} 
-          b4JoinedBoard={b4JoinedBoard} isXNext={isXNext}
-        />
-      </div>
-    );
+            b4JoinedBoard={b4JoinedBoard} isXNext={isXNext}
+            allUsers={allUsers}
+            winner={winner}
+          />
+        </div>  
+      );
+    }
   }
   
   return gameScreen;

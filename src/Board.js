@@ -23,7 +23,7 @@ export const Board = (props) => {
   
     useEffect(() => {
         socket.on('move', (data) => {
-          console.log(data);
+          //console.log(data);
           
           //Update the board with the opponent's move
           setBoard((prevBoard) => {
@@ -34,7 +34,7 @@ export const Board = (props) => {
           
           //setBoard(data['newBoard'])
           //Swap turns once the opponent has moved
-          setXTurn((prevTurn) => !prevTurn);
+          setXTurn(data['isXNext']);
         });
     }, []);
     
@@ -85,7 +85,7 @@ export const Board = (props) => {
             if (winner) {
                 // End the game
                 socket.emit('winner', {
-                    winner: 'Player ' + winner + ' won!',
+                    winner: 'Player ' + winner + ' (' + props.user['username'] + ') won!',
                     index: index,
                     player: newBoard[index]
                 });
@@ -120,28 +120,41 @@ export const Board = (props) => {
       return null;
     }
 
-    if (props.user['spectator']) {
+    // Make board unclickable if the player is a spectator, only 1 user is online, the game ends and isn't restarted
+    if (props.user['spectator'] || props.allUsers.length === 1 || Object.keys(props.winner).length !== 0) {
         // Return a non-clickable board
         // that still updates based on the players' moves
-        return (
-            <div className="board">
-            {Board.map((value, index) => 
-                 <div className="box">
-                    {value}
-                </div>
-            )}
-            </div>   
-        )
+        if (props.allUsers.length === 1) {
+            return (
+                <div>
+                <h1>Waiting for another player...</h1>
+                </div>   
+            )
+        }
+        else {
+            return (
+                <div className="board">
+                {Board.map((value, index) => 
+                     <div className="box">
+                        {value}
+                    </div>
+                )}
+                </div>   
+            )
+        }
     }
     else {
         return (
-            <div className="board">
-                {Board.map((value, index) => 
-                    <PlayerSquare 
-                        handleBoardChange={handleBoardChange}
-                        value={value} index={index} 
-                    />
-                )}
+            <div>
+                <div className="board">
+                    {Board.map((value, index) => 
+                        <PlayerSquare 
+                            handleBoardChange={handleBoardChange}
+                            value={value} index={index} 
+                        />
+                    )}
+                </div>
+                <h1>X Goes First</h1>
             </div>
         )
     }

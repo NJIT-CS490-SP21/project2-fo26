@@ -12,7 +12,7 @@ export const LogInControl = (props) => {
             // the server sends back their user data
             props.setLoggedIn(true);
             props.setUser(data);
-            console.log(data);
+            //console.log(data);
             // Get a list of all currently logged in users
             // from the server after this client has successfully
             // logged in. Also, if the logged in player is going
@@ -47,7 +47,7 @@ export const LogInControl = (props) => {
     if (props.isLoggedIn) {
         Greeting = (
             <div id="logout">
-                <h1>Hi {props.user['username']}</h1>
+                <h1>Username: {props.user['username']}</h1>
                 <button onClick={handleLogOut}>Log out</button>
             </div>
         );
