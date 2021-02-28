@@ -121,6 +121,16 @@ def on_login(data):
     global logged_in_users
     global active_rooms
     
+    is_x_player = False
+    is_o_player = False
+    for user in logged_in_users:
+        if 'player' in user:
+            if user['player'] == 'X':
+                is_x_player = True
+            else:
+                is_o_player = True
+                
+    
     # Make the user's unique id their socket id
     user_info = {'user_id': request.sid}
     # Get the count of players currently online
@@ -133,9 +143,9 @@ def on_login(data):
         # depending on when they joined
         user_info.update({'spectator': False})
         
-        if num_players == 0:
+        if num_players == 0 or is_o_player:
             user_info.update({'player': 'X'})
-        else:
+        elif num_players == 1 or is_x_player:
             user_info.update({'player': 'O'})
             
     else:
