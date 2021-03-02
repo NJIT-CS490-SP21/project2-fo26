@@ -4,8 +4,8 @@ import { LogInControl } from './Login.js';
 import { Board } from './Board.js'
 import { DisplayUsers } from './DisplayUsers.js';
 import { useState, useEffect } from 'react';
+import { Leaderboard } from './Leaderboard.js'
 import io from 'socket.io-client';
-
 const socket = io();
 
 function App() {
@@ -55,37 +55,43 @@ function App() {
   else {
     if (user['spectator']) {
       gameScreen = (
-        <div id="gameScreen">
-          {(Object.keys(winner).length !== 0) ? <h1>{winner['winner']}</h1> : null}
-          <DisplayUsers allUsers={allUsers}/>
-          <LogInControl 
-            user={user} setUser={setUser}
-            isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
-          />
-          <Board user={user} 
-            allUsers={allUsers}
-            winner={winner}
-          />
+        <div>
+          <Leaderboard />
+          <div id="gameScreen">
+            {(Object.keys(winner).length !== 0) ? <h1>{winner['winMsg']}</h1> : null}
+            <DisplayUsers allUsers={allUsers}/>
+            <LogInControl 
+              user={user} setUser={setUser}
+              isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+            />
+            <Board user={user} 
+              allUsers={allUsers}
+              winner={winner}
+            />
+          </div>
         </div>
       );
     }
     
     else {
       gameScreen = (
-        <div id="gameScreen">
-        {(Object.keys(winner).length !== 0) ? 
-          <div><h1>{winner['winner']}</h1>
-          <button onClick={restartGame}>Players click here to restart</button></div> : null}
-        <DisplayUsers allUsers={allUsers}/>
-        <LogInControl 
-          user={user} setUser={setUser}
-          isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
-        />
-        <Board user={user}
-            allUsers={allUsers}
-            winner={winner}
-          />
-        </div>  
+        <div>
+          <Leaderboard />
+          <div id="gameScreen">
+            {(Object.keys(winner).length !== 0) ? 
+              <div><h1>{winner['winMsg']}</h1>
+              <button onClick={restartGame}>Players click here to restart</button></div> : null}
+            <DisplayUsers allUsers={allUsers}/>
+            <LogInControl 
+              user={user} setUser={setUser}
+              isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+            />
+            <Board user={user}
+              allUsers={allUsers}
+              winner={winner}
+            />
+          </div>
+        </div>
       );
     }
   }

@@ -28,9 +28,9 @@ export const Board = (props) => {
           
             //Update the board with the opponent's move
             setBoard((prevBoard) => {
-            let newBoard = [...prevBoard]
-            newBoard[data.index] = data.player
-            return newBoard
+                let newBoard = [...prevBoard]
+                newBoard[data.index] = data.player
+                return newBoard
             });
           
             //Swap turns once the opponent has moved
@@ -94,6 +94,7 @@ export const Board = (props) => {
         if (!newBoard.includes('')) {
             socket.emit('winner', {
                     winner: 'It\'s a Draw!',
+                    status: 'draw',
                     index: index,
                     player: newBoard[index]
                 });
@@ -104,7 +105,9 @@ export const Board = (props) => {
             if (winner) {
                 // Send the last move and winner information thus ending the game
                 socket.emit('winner', {
-                    winner: 'Player ' + winner + ' (' + props.user['username'] + ') won!',
+                    winMsg: 'Player ' + winner + ' (' + props.user['username'] + ') won!',
+                    status: 'win',
+                    username: props.user['username'],
                     index: index,
                     player: newBoard[index]
                 });

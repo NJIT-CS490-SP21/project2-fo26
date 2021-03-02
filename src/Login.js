@@ -11,14 +11,14 @@ export const LogInControl = (props) => {
         // possible assigned letter (X or O) back
         socket.emit('login', {'username': username});
         socket.on('login', (data) => {
-            props.setLoggedIn((prevState) => !prevState);
+            props.setLoggedIn(true);
             props.setUser(data);
             socket.emit('getLoggedInUsers')
         });
     }
     
     const handleLogOut = () => {
-        props.setLoggedIn((prevState) => !prevState);
+        props.setLoggedIn(false);
         // Notify the server that this
         // user is logging out so their
         // entry can be deleted from the online players
