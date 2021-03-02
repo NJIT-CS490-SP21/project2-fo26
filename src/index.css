@@ -28,3 +28,23 @@ code {
   margin-right: auto;
   padding-bottom: 1em;
 }
+
+#leaderDiv {
+  margin-left: 1em;
+  margin-top: 1em;
+}
+
+#leaderboard{
+  font-size: 2em;
+  text-align: center;
+}
+
+#specialRow {
+  color: orange;
+}
+
+table, th, tr, td{
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 0.2em;
+}

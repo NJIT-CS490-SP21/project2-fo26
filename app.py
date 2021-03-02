@@ -149,6 +149,13 @@ def on_winner(data):
 def reset_game():
     socketio.emit('resetGame', {}, broadcast=True, include_self=True)
     
+@socketio.on('getLeaders')
+def get_leaders():
+    res = {
+        'allUsers': db.session.query(Player.username, Player.score).order_by(Player.score.desc()).all()
+    }
+    socketio.emit('getLeaders', res, room=request.sid)
+
 socketio.run(
     app,
     host=os.getenv('IP', '0.0.0.0'),

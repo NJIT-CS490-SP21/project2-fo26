@@ -56,7 +56,7 @@ function App() {
     if (user['spectator']) {
       gameScreen = (
         <div>
-          <Leaderboard />
+          <Leaderboard user={user}/>
           <div id="gameScreen">
             {(Object.keys(winner).length !== 0) ? <h1>{winner['winMsg']}</h1> : null}
             <DisplayUsers allUsers={allUsers}/>
@@ -76,7 +76,7 @@ function App() {
     else {
       gameScreen = (
         <div>
-          <Leaderboard />
+          <Leaderboard user={user}/>
           <div id="gameScreen">
             {(Object.keys(winner).length !== 0) ? 
               <div><h1>{winner['winMsg']}</h1>
