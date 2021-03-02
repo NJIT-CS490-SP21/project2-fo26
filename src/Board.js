@@ -18,49 +18,69 @@ export const PlayerSquare = (props) => {
 
 
 export const Board = (props) => {
-    const [Board, setBoard] = useState(props.b4JoinedBoard);
+    const [Board, setBoard] = useState(['','','','','','','','','']);
     const [isXTurn, setXTurn] = useState(true);
   
     useEffect(() => {
         socket.on('move', (data) => {
-          //console.log(data);
+            console.log('MOVE');
+            console.log(data);
           
-          //Update the board with the opponent's move
+            //Update the board with the opponent's move
+            setBoard((prevBoard) => {
+            let newBoard = [...prevBoard]
+            newBoard[data.index] = data.player
+            return newBoard
+            });
+          
+            //Swap turns once the opponent has moved
+            setXTurn((prevState) => !prevState);
+        });
+    }, []);
+    
+    useEffect(() => {
+        socket.on('winner', (data) => {
+          console.log('WINNER')
+          console.log(data);
+          
+          //Update the board with the opponent's last move
           setBoard((prevBoard) => {
             let newBoard = [...prevBoard]
             newBoard[data.index] = data.player
             return newBoard
           });
-          
-          //setBoard(data['newBoard'])
-          //Swap turns once the opponent has moved
-          setXTurn(data['isXNext']);
         });
     }, []);
     
-    // Set the board to include moves made before
-    // the user joined
     useEffect(() => {
-         setBoard(props.b4JoinedBoard);
-         setXTurn(props.isXNext);
-    }, [props.b4JoinedBoard]);
+        socket.on('resetGame', (data) => {
+            console.log('RESET GAME');
+            // Set X turn to true
+            setXTurn((prevState) => {
+                if (prevState)
+                    return prevState
+                else
+                    return !prevState
+            });
+            setBoard(['','','','','','','','','']);
+        });
+    }, [])
     
     const handleBoardChange = (index) => {
         let newBoard = [...Board];
         // Get the letter of the player trying to make a move
         const playerLetter = props.user['player']
-        const isXTurnCopy = isXTurn;
         
         // Check if player tried to make a valid move
         // Also check if the spot they clicked on is empty
-        if (playerLetter === 'X' && isXTurnCopy && newBoard[index] == '') {
+        if (playerLetter === 'X' && isXTurn && newBoard[index] == '') {
             // The move is valid
             newBoard[index] = 'X';
-            setXTurn(false);
+            setXTurn((prevState) => !prevState);
         }
-        else if (playerLetter === 'O' && !isXTurnCopy && newBoard[index] == '') {
+        else if (playerLetter === 'O' && !isXTurn && newBoard[index] == '') {
             newBoard[index] = 'O';
-            setXTurn(true);
+            setXTurn((prevState) => !prevState);
         }
         
         else {
@@ -82,7 +102,7 @@ export const Board = (props) => {
             // Check if there is a winner with the current board
             const winner = calculateWinner(newBoard);
             if (winner) {
-                // End the game
+                // Send the last move and winner information thus ending the game
                 socket.emit('winner', {
                     winner: 'Player ' + winner + ' (' + props.user['username'] + ') won!',
                     index: index,

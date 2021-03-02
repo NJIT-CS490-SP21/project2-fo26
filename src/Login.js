@@ -5,36 +5,20 @@ import io from 'socket.io-client';
 
 const socket = io();
 export const LogInControl = (props) => {
-    
-    useEffect(() => {
-        socket.on('login', (data) => {
-            // Show the user the board once
-            // the server sends back their user data
-            props.setLoggedIn(true);
-            props.setUser(data);
-            //console.log(data);
-            // Get a list of all currently logged in users
-            // from the server after this client has successfully
-            // logged in. Also, if the logged in player is going
-            // to be O or X, reset the board
-            if ('player' in data)
-                socket.emit('getLoggedInUsers', {'resetBoard': true});
-            else
-                socket.emit('getLoggedInUsers', {})
-        });
-    }, []);
-    
     const handleLogIn = (username) => {
         // Send the server the player's desired username,
         // and get the player's id, spectator status, and
         // possible assigned letter (X or O) back
-        socket.emit('login', {
-            username: username
+        socket.emit('login', {'username': username});
+        socket.on('login', (data) => {
+            props.setLoggedIn((prevState) => !prevState);
+            props.setUser(data);
+            socket.emit('getLoggedInUsers')
         });
     }
     
     const handleLogOut = () => {
-        props.setLoggedIn(false);
+        props.setLoggedIn((prevState) => !prevState);
         // Notify the server that this
         // user is logging out so their
         // entry can be deleted from the online players
