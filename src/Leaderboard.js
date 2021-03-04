@@ -2,7 +2,6 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io();
 export const Leaderboard = (props) => {
     const [show, setShow] = useState(false)
     const [leaderboard, setLeaders] = useState([])
@@ -10,20 +9,20 @@ export const Leaderboard = (props) => {
     useEffect(() => {
         // Ask server for updated leaderboard once
         // a game ends
-        socket.on('winner', () => {
-            socket.emit('getLeaders')
+        props.socket.on('winner', () => {
+            props.socket.emit('getLeaders')
         });
     }, []);
     
     useEffect(() => {
-        socket.on('getLeaders', (data) => {
+        props.socket.on('getLeaders', (data) => {
             setLeaders(data['allUsers']);
         });
     }, []);
     
     const handleClick = () => {
         setShow((prevState) => !prevState)
-        socket.emit('getLeaders');
+        props.socket.emit('getLeaders');
     }
     
     if (show) {

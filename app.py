@@ -40,7 +40,7 @@ def index(filename):
 @socketio.on('connect')
 def on_connect():
     print('User connected!')
-    
+
 # When a client disconnects from this Socket connection, this function is run
 @socketio.on('disconnect')
 def on_disconnect():
@@ -51,48 +51,48 @@ def on_disconnect():
     for user in logged_in_users:
         if user['user_id'] != request.sid:
             new_logged_in_users.append(user)
-            
+   
     logged_in_users = new_logged_in_users
-    
+
     print('User disconnected!')
 
 @socketio.on('move')
 def on_move(data):
     socketio.emit('move', data, broadcast=True, include_self=False)
 
-    
+
 @socketio.on('login')
 def on_login(data):
     global logged_in_users
-    
+
     # Make the user's unique id their socket id
     user_info = {'user_id': request.sid, 'spectator': True}
     # Get the count of players currently online
     num_players = len(logged_in_users)
-    
+
     # Less than 2 because logged_in_users isn't updated
     # until after this if/else block, so its length is 1 behind
     if num_players < 2:
         # Player is not a spectator and will be assigned a letter
         # depending on when they joined
         user_info.update({'spectator': False})
-        
+
         if num_players == 0:
             user_info.update({'player': 'X'})
         else:
             user_info.update({'player': 'O'})
-        
+
     user_info.update(data)
     logged_in_users.append(user_info)
-   
+
    # Check if the username exists in the db
     exists = db.session.query(Player.id).filter_by(username=data['username']).first()
-   
+
     if not exists:
         # Create an entry in the db for the username
-       player = Player(username=data['username'], score=100)
-       db.session.add(player)
-       db.session.commit()
+        player = Player(username=data['username'], score=100)
+        db.session.add(player)
+        db.session.commit()
       
     # Send the calculated user info privately to the recently logged in client
     # request.sid gets the id of the sender client, and sends the data back

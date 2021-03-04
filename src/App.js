@@ -49,6 +49,7 @@ function App() {
       <LogInControl 
         user={user} setUser={setUser}
         isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+        socket={socket}
       />  
     );
   }
@@ -56,17 +57,19 @@ function App() {
     if (user['spectator']) {
       gameScreen = (
         <div>
-          <Leaderboard user={user}/>
+          <Leaderboard user={user} socket={socket}/>
           <div id="gameScreen">
             {(Object.keys(winner).length !== 0) ? <h1>{winner['winMsg']}</h1> : null}
             <DisplayUsers allUsers={allUsers}/>
             <LogInControl 
               user={user} setUser={setUser}
               isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+              socket={socket}
             />
             <Board user={user} 
               allUsers={allUsers}
               winner={winner}
+              socket={socket}
             />
           </div>
         </div>
@@ -76,7 +79,7 @@ function App() {
     else {
       gameScreen = (
         <div>
-          <Leaderboard user={user}/>
+          <Leaderboard user={user} socket={socket}/>
           <div id="gameScreen">
             {(Object.keys(winner).length !== 0) ? 
               <div><h1>{winner['winMsg']}</h1>
@@ -85,10 +88,12 @@ function App() {
             <LogInControl 
               user={user} setUser={setUser}
               isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+              socket={socket}
             />
             <Board user={user}
               allUsers={allUsers}
               winner={winner}
+              socket={socket}
             />
           </div>
         </div>

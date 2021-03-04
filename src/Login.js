@@ -3,17 +3,16 @@ import { Board } from './Board.js'
 import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
-const socket = io();
 export const LogInControl = (props) => {
     const handleLogIn = (username) => {
         // Send the server the player's desired username,
         // and get the player's id, spectator status, and
         // possible assigned letter (X or O) back
-        socket.emit('login', {'username': username});
-        socket.on('login', (data) => {
+        props.socket.emit('login', {'username': username});
+        props.socket.on('login', (data) => {
             props.setLoggedIn(true);
             props.setUser(data);
-            socket.emit('getLoggedInUsers')
+            props.socket.emit('getLoggedInUsers')
         });
     }
     
@@ -23,7 +22,7 @@ export const LogInControl = (props) => {
         // user is logging out so their
         // entry can be deleted from the online players
         // list
-        socket.emit('logout', props.user);
+        props.socket.emit('logout', props.user);
     }
     
     let Greeting;

@@ -2,8 +2,6 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io(); // Connects to socket connection
-
 export const PlayerSquare = (props) => {
     const onClickBox = () => {
         props.handleBoardChange(props.index)
@@ -22,7 +20,7 @@ export const Board = (props) => {
     const [isXTurn, setXTurn] = useState(true);
   
     useEffect(() => {
-        socket.on('move', (data) => {
+        props.socket.on('move', (data) => {
             console.log('MOVE');
             console.log(data);
           
@@ -39,7 +37,7 @@ export const Board = (props) => {
     }, []);
     
     useEffect(() => {
-        socket.on('winner', (data) => {
+        props.socket.on('winner', (data) => {
           console.log('WINNER')
           console.log(data);
           
@@ -53,7 +51,7 @@ export const Board = (props) => {
     }, []);
     
     useEffect(() => {
-        socket.on('resetGame', (data) => {
+        props.socket.on('resetGame', (data) => {
             console.log('RESET GAME');
             // Set X turn to true
             setXTurn((prevState) => {
@@ -92,7 +90,7 @@ export const Board = (props) => {
         
         // There is a draw as the board is full but no winner
         if (!newBoard.includes('')) {
-            socket.emit('winner', {
+            props.socket.emit('winner', {
                 winMsg: 'It\'s a Draw!',
                 status: 'draw',
                 index: index,
@@ -104,7 +102,7 @@ export const Board = (props) => {
             const winner = calculateWinner(newBoard);
             if (winner) {
                 // Send the last move and winner information thus ending the game
-                socket.emit('winner', {
+                props.socket.emit('winner', {
                     winMsg: 'Player ' + winner + ' (' + props.user['username'] + ') won!',
                     status: 'win',
                     username: props.user['username'],
@@ -114,7 +112,7 @@ export const Board = (props) => {
             }
             else {
                 // Send back the move that was just made's information
-                socket.emit('move', {
+                props.socket.emit('move', {
                     index: index,
                     player: newBoard[index]
                 });
