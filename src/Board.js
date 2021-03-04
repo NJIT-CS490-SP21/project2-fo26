@@ -93,11 +93,11 @@ export const Board = (props) => {
         // There is a draw as the board is full but no winner
         if (!newBoard.includes('')) {
             socket.emit('winner', {
-                    winner: 'It\'s a Draw!',
-                    status: 'draw',
-                    index: index,
-                    player: newBoard[index]
-                });
+                winMsg: 'It\'s a Draw!',
+                status: 'draw',
+                index: index,
+                player: newBoard[index]
+            });
         }
         else {
             // Check if there is a winner with the current board
