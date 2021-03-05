@@ -30,6 +30,7 @@ code {
 }
 
 #leaderDiv {
+  position: absolute;
   margin-left: 1em;
   margin-top: 1em;
 }
@@ -45,14 +46,12 @@ code {
 
 #leaderboardBtn {
   margin-left: 1em;
-  margin-top: 1em;
+  margin-top: 0.5em;
   width: 15em;
   height: 2.5em;
 }
 
 #sortButtons {
-  display: block;
-  padding-top: 0.2em;
   padding-left: 4em;
 }
 
