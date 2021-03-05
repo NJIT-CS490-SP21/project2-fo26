@@ -155,6 +155,14 @@ def get_leaders():
         'allUsers': db.session.query(Player.username, Player.score).order_by(Player.score.desc()).all()
     }
     socketio.emit('getLeaders', res, room=request.sid)
+    
+@socketio.on('getLeadersByName')
+def get_leaders_by_name():
+    res = {
+        'allUsers': db.session.query(Player.username, Player.score).order_by(Player.username).all()
+    }
+    socketio.emit('getLeadersByName', res, room=request.sid)
+
 
 socketio.run(
     app,

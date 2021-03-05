@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 export const Leaderboard = (props) => {
-    const [show, setShow] = useState(false)
-    const [leaderboard, setLeaders] = useState([])
+    const [show, setShow] = useState(false);
+    const [leaderboard, setLeaders] = useState([]);
     
     useEffect(() => {
         // Ask server for updated leaderboard once
@@ -20,16 +20,34 @@ export const Leaderboard = (props) => {
         });
     }, []);
     
+    useEffect(() => {
+        props.socket.on('getLeadersByName', (data) => {
+            setLeaders(data['allUsers']);
+        });
+    }, []);
+    
     const handleClick = () => {
         setShow((prevState) => !prevState)
+        props.socket.emit('getLeaders');
+    }
+    
+    const handleSortByName = () => {
+        props.socket.emit('getLeadersByName');
+    }
+    
+    const handleSortByScore = () => {
         props.socket.emit('getLeaders');
     }
     
     if (show) {
         return (
             <div id="leaderDiv">
-                <button onClick={handleClick}>
+                <button id="leaderboardBtn" onClick={handleClick}>
                     Toggle Leaderboard</button>
+                <div id="sortButtons">
+                    <br/><button onClick={handleSortByName}>Sort by Name</button>
+                    <br/><button onClick={handleSortByScore}>Sort by Score</button>
+                </div>
                 <table id="leaderboard">
                     <thead><tr><td>Username</td><td>Score</td></tr></thead>
                     <tbody>
@@ -48,7 +66,7 @@ export const Leaderboard = (props) => {
     else {
         return (
             <div>
-                <button onClick={handleClick}>
+                <button id="leaderboardBtn" onClick={handleClick}>
                     Toggle Leaderboard</button>
             </div>
         );
