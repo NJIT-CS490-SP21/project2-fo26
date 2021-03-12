@@ -28,3 +28,35 @@ code {
   margin-right: auto;
   padding-bottom: 1em;
 }
+
+#leaderDiv {
+  position: absolute;
+  margin-left: 1em;
+  margin-top: 1em;
+}
+
+#leaderboard{
+  font-size: 2em;
+  text-align: center;
+}
+
+#specialRow {
+  color: orange;
+}
+
+#leaderboardBtn {
+  margin-left: 1em;
+  margin-top: 0.5em;
+  width: 15em;
+  height: 2.5em;
+}
+
+#sortButtons {
+  padding-left: 4em;
+}
+
+table, th, tr, td{
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 0.2em;
+}

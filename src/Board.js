@@ -2,8 +2,6 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io(); // Connects to socket connection
-
 export const PlayerSquare = (props) => {
     const onClickBox = () => {
         props.handleBoardChange(props.index)
@@ -18,49 +16,69 @@ export const PlayerSquare = (props) => {
 
 
 export const Board = (props) => {
-    const [Board, setBoard] = useState(props.b4JoinedBoard);
+    const [Board, setBoard] = useState(['','','','','','','','','']);
     const [isXTurn, setXTurn] = useState(true);
   
     useEffect(() => {
-        socket.on('move', (data) => {
-          //console.log(data);
+        props.socket.on('move', (data) => {
+            console.log('MOVE');
+            console.log(data);
           
-          //Update the board with the opponent's move
+            //Update the board with the opponent's move
+            setBoard((prevBoard) => {
+                let newBoard = [...prevBoard]
+                newBoard[data.index] = data.player
+                return newBoard
+            });
+          
+            //Swap turns once the opponent has moved
+            setXTurn((prevState) => !prevState);
+        });
+    }, []);
+    
+    useEffect(() => {
+        props.socket.on('winner', (data) => {
+          console.log('WINNER')
+          console.log(data);
+          
+          //Update the board with the opponent's last move
           setBoard((prevBoard) => {
             let newBoard = [...prevBoard]
             newBoard[data.index] = data.player
             return newBoard
           });
-          
-          //setBoard(data['newBoard'])
-          //Swap turns once the opponent has moved
-          setXTurn(data['isXNext']);
         });
     }, []);
     
-    // Set the board to include moves made before
-    // the user joined
     useEffect(() => {
-         setBoard(props.b4JoinedBoard);
-         setXTurn(props.isXNext);
-    }, [props.b4JoinedBoard]);
+        props.socket.on('resetGame', (data) => {
+            console.log('RESET GAME');
+            // Set X turn to true
+            setXTurn((prevState) => {
+                if (prevState)
+                    return prevState
+                else
+                    return !prevState
+            });
+            setBoard(['','','','','','','','','']);
+        });
+    }, [])
     
     const handleBoardChange = (index) => {
         let newBoard = [...Board];
         // Get the letter of the player trying to make a move
         const playerLetter = props.user['player']
-        const isXTurnCopy = isXTurn;
         
         // Check if player tried to make a valid move
         // Also check if the spot they clicked on is empty
-        if (playerLetter === 'X' && isXTurnCopy && newBoard[index] == '') {
+        if (playerLetter === 'X' && isXTurn && newBoard[index] == '') {
             // The move is valid
             newBoard[index] = 'X';
-            setXTurn(false);
+            setXTurn((prevState) => !prevState);
         }
-        else if (playerLetter === 'O' && !isXTurnCopy && newBoard[index] == '') {
+        else if (playerLetter === 'O' && !isXTurn && newBoard[index] == '') {
             newBoard[index] = 'O';
-            setXTurn(true);
+            setXTurn((prevState) => !prevState);
         }
         
         else {
@@ -72,26 +90,29 @@ export const Board = (props) => {
         
         // There is a draw as the board is full but no winner
         if (!newBoard.includes('')) {
-            socket.emit('winner', {
-                    winner: 'It\'s a Draw!',
-                    index: index,
-                    player: newBoard[index]
-                });
+            props.socket.emit('winner', {
+                winMsg: 'It\'s a Draw!',
+                status: 'draw',
+                index: index,
+                player: newBoard[index]
+            });
         }
         else {
             // Check if there is a winner with the current board
             const winner = calculateWinner(newBoard);
             if (winner) {
-                // End the game
-                socket.emit('winner', {
-                    winner: 'Player ' + winner + ' (' + props.user['username'] + ') won!',
+                // Send the last move and winner information thus ending the game
+                props.socket.emit('winner', {
+                    winMsg: 'Player ' + winner + ' (' + props.user['username'] + ') won!',
+                    status: 'win',
+                    username: props.user['username'],
                     index: index,
                     player: newBoard[index]
                 });
             }
             else {
                 // Send back the move that was just made's information
-                socket.emit('move', {
+                props.socket.emit('move', {
                     index: index,
                     player: newBoard[index]
                 });
