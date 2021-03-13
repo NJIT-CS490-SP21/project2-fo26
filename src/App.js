@@ -1,11 +1,11 @@
-import logo from './logo.svg';
 import './App.css';
-import { LogInControl } from './Login.js';
-import { Board } from './Board.js'
-import { DisplayUsers } from './DisplayUsers.js';
-import { useState, useEffect } from 'react';
-import { Leaderboard } from './Leaderboard.js'
+import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+import LogInControl from './Login';
+import { GameBoard } from './GameBoard';
+import DisplayUsers from './DisplayUsers';
+import Leaderboard from './Leaderboard';
+
 const socket = io();
 
 function App() {
@@ -13,94 +13,101 @@ function App() {
   const [allUsers, setAllUsers] = useState([]);
   const [isLoggedIn, setLoggedIn] = useState(false);
   const [winner, setWinner] = useState({});
-  
+
   useEffect(() => {
     socket.on('getLoggedInUsers', (data) => {
-      console.log('GET LOGGED IN USERS');
-      console.log(data);
-      setAllUsers(data['loggedInUsers']);
+      setAllUsers(data.loggedInUsers);
     });
   }, []);
-  
+
   useEffect(() => {
-    socket.on('resetGame', (data) => {
-      setWinner({});  
+    socket.on('resetGame', () => {
+      setWinner({});
     });
   }, []);
-  
+
   useEffect(() => {
     socket.on('winner', (data) => {
-        setWinner(data);
+      setWinner(data);
     });
   }, []);
-  
+
   const restartGame = () => {
-    if (!user['spectator']) {
+    if (!user.spectator) {
       socket.emit('resetGame');
     }
-    else
-      return null;
-  }
-  
+    return null;
+  };
+
   let gameScreen;
-  
+
   if (!isLoggedIn) {
     gameScreen = (
-      <LogInControl 
-        user={user} setUser={setUser}
-        isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
+      <LogInControl
+        user={user}
+        setUser={setUser}
+        isLoggedIn={isLoggedIn}
+        setLoggedIn={setLoggedIn}
         socket={socket}
-      />  
+      />
+    );
+  } else if (user.spectator) {
+    gameScreen = (
+      <div>
+        <Leaderboard user={user} socket={socket} />
+        <div id="gameScreen">
+          {Object.keys(winner).length !== 0 ? (
+            <h1>{winner.winMsg}</h1>
+          ) : null}
+          <DisplayUsers allUsers={allUsers} />
+          <LogInControl
+            user={user}
+            setUser={setUser}
+            isLoggedIn={isLoggedIn}
+            setLoggedIn={setLoggedIn}
+            socket={socket}
+          />
+          <GameBoard
+            user={user}
+            allUsers={allUsers}
+            winner={winner}
+            socket={socket}
+          />
+        </div>
+      </div>
+    );
+  } else {
+    gameScreen = (
+      <div>
+        <Leaderboard user={user} socket={socket} />
+        <div id="gameScreen">
+          {Object.keys(winner).length !== 0 ? (
+            <div>
+              <h1>{winner.winMsg}</h1>
+              <button type="button" onClick={restartGame}>
+                Players click here to restart
+              </button>
+            </div>
+          ) : null}
+          <DisplayUsers allUsers={allUsers} />
+          <LogInControl
+            user={user}
+            setUser={setUser}
+            isLoggedIn={isLoggedIn}
+            setLoggedIn={setLoggedIn}
+            socket={socket}
+          />
+          <GameBoard
+            user={user}
+            allUsers={allUsers}
+            winner={winner}
+            socket={socket}
+          />
+        </div>
+      </div>
     );
   }
-  else {
-    if (user['spectator']) {
-      gameScreen = (
-        <div>
-          <Leaderboard user={user} socket={socket}/>
-          <div id="gameScreen">
-            {(Object.keys(winner).length !== 0) ? <h1>{winner['winMsg']}</h1> : null}
-            <DisplayUsers allUsers={allUsers}/>
-            <LogInControl 
-              user={user} setUser={setUser}
-              isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
-              socket={socket}
-            />
-            <Board user={user} 
-              allUsers={allUsers}
-              winner={winner}
-              socket={socket}
-            />
-          </div>
-        </div>
-      );
-    }
-    
-    else {
-      gameScreen = (
-        <div>
-          <Leaderboard user={user} socket={socket}/>
-          <div id="gameScreen">
-            {(Object.keys(winner).length !== 0) ? 
-              <div><h1>{winner['winMsg']}</h1>
-              <button onClick={restartGame}>Players click here to restart</button></div> : null}
-            <DisplayUsers allUsers={allUsers}/>
-            <LogInControl 
-              user={user} setUser={setUser}
-              isLoggedIn={isLoggedIn} setLoggedIn={setLoggedIn}
-              socket={socket}
-            />
-            <Board user={user}
-              allUsers={allUsers}
-              winner={winner}
-              socket={socket}
-            />
-          </div>
-        </div>
-      );
-    }
-  }
-  
+
   return gameScreen;
 }
 

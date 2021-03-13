@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap");
 
 body {
   margin: 0;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: "Noto Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: darkcyan;
@@ -10,18 +10,20 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
 #displayUsers {
-  position:absolute;
-  top:0;
-  right:0;
+  position: absolute;
+  top: 0;
+  right: 0;
   padding-right: 2em;
 }
 
-#login, #logout, #gameScreen {
+#login,
+#logout,
+#gameScreen {
   display: block;
   text-align: center;
   margin-left: auto;
@@ -35,7 +37,7 @@ code {
   margin-top: 1em;
 }
 
-#leaderboard{
+#leaderboard {
   font-size: 2em;
   text-align: center;
 }
@@ -55,7 +57,10 @@ code {
   padding-left: 4em;
 }
 
-table, th, tr, td{
+table,
+th,
+tr,
+td {
   border: 1px solid black;
   border-collapse: collapse;
   padding: 0.2em;
