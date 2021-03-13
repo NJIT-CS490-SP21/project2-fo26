@@ -1,78 +1,93 @@
+'''
+Flask backend server for a multiplayer Tic-Tac-Toe game.
+'''
 import os
-from flask import Flask, send_from_directory, json, session, request
+from flask import Flask, send_from_directory, json, request
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
-app = Flask(__name__, static_folder='./build/static')
+APP = Flask(__name__, static_folder='./build/static')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+APP.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+APP.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+DB = SQLAlchemy(APP)
 
 
-class Player(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    score = db.Column(db.Integer, nullable=False)
+class Player(DB.Model):
+    '''
+    Model of the Players Postgres table
+    containing username and score attributes.
+    '''
+    id = DB.Column(DB.Integer, primary_key=True)
+    username = DB.Column(DB.String(80), unique=True, nullable=False)
+    score = DB.Column(DB.Integer, nullable=False)
 
     def __repr__(self):
         return '<Player %r>' % self.username
 
+DB.create_all()
 
-db.create_all()
+CORS_ = CORS(APP, resources={r"/*": {"origins": "*"}})
 
-cors = CORS(app, resources={r"/*": {"origins": "*"}})
+SOCKET_IO = SocketIO(APP,
+                     cors_allowed_origins="*",
+                     json=json,
+                     manage_session=False)
 
-socketio = SocketIO(app,
-                    cors_allowed_origins="*",
-                    json=json,
-                    manage_session=False)
-
-logged_in_users = []
+LOGGED_IN_USERS = []
 
 
-@app.route('/', defaults={"filename": "index.html"})
-@app.route('/<path:filename>')
+@APP.route('/', defaults={"filename": "index.html"})
+@APP.route('/<path:filename>')
 def index(filename):
+    ''' Send the requested file
+    to the user's browser '''
     return send_from_directory('./build', filename)
 
 
 # When a client connects from this Socket connection, this function is run
-@socketio.on('connect')
+@SOCKET_IO.on('connect')
 def on_connect():
+    ''' Print out a message when a user connects '''
     print('User connected!')
 
 
 # When a client disconnects from this Socket connection, this function is run
-@socketio.on('disconnect')
+@SOCKET_IO.on('disconnect')
 def on_disconnect():
-    global logged_in_users
+    ''' Remove the disconnected user from
+    the logged in users list '''
+    global LOGGED_IN_USERS
     # Remove the entry in logged_in_users
     # with the disconnected socket id
     new_logged_in_users = []
-    for user in logged_in_users:
+    for user in LOGGED_IN_USERS:
         if user['user_id'] != request.sid:
             new_logged_in_users.append(user)
 
-    logged_in_users = new_logged_in_users
+    LOGGED_IN_USERS = new_logged_in_users
 
     print('User disconnected!')
 
 
-@socketio.on('move')
+@SOCKET_IO.on('move')
 def on_move(data):
-    socketio.emit('move', data, broadcast=True, include_self=False)
+    ''' Emit a socketio message to all clients
+    that a move has been made '''
+    SOCKET_IO.emit('move', data, broadcast=True, include_self=False)
 
 
-@socketio.on('login')
+@SOCKET_IO.on('login')
 def on_login(data):
-    global logged_in_users
+    ''' Add a user to the logged in users list
+    and send back their player status '''
+    global LOGGED_IN_USERS
 
     # Make the user's unique id their socket id
     user_info = {'user_id': request.sid, 'spectator': True}
     # Get the count of players currently online
-    num_players = len(logged_in_users)
+    num_players = len(LOGGED_IN_USERS)
 
     # Less than 2 because logged_in_users isn't updated
     # until after this if/else block, so its length is 1 behind
@@ -87,102 +102,116 @@ def on_login(data):
             user_info.update({'player': 'O'})
 
     user_info.update(data)
-    logged_in_users.append(user_info)
+    LOGGED_IN_USERS.append(user_info)
 
     # Check if the username exists in the db
-    exists = db.session.query(
+    exists = DB.session.query(
         Player.id).filter_by(username=data['username']).first()
 
     if not exists:
         # Create an entry in the db for the username
         player = Player(username=data['username'], score=100)
-        db.session.add(player)
-        db.session.commit()
+        DB.session.add(player)
+        DB.session.commit()
 
     # Send the calculated user info privately to the recently logged in client
     # request.sid gets the id of the sender client, and sends the data back
     # to their 'room', which only the sender is apart of
-    socketio.emit('login', user_info, room=request.sid)
+    SOCKET_IO.emit('login', user_info, room=request.sid)
 
 
-@socketio.on('logout')
+@SOCKET_IO.on('logout')
 def on_logout(data):
-    global logged_in_users
+    ''' Remove a user from the
+    logged in users list '''
+    global LOGGED_IN_USERS
     # Delete the entry of the logged out user
     # according to their user id
     user_id = data['user_id']
 
     new_logged_in_users = []
-    for user in logged_in_users:
+    for user in LOGGED_IN_USERS:
         if user['user_id'] != user_id:
             new_logged_in_users.append(user)
 
-    logged_in_users = new_logged_in_users
-    res = {'loggedInUsers': logged_in_users}
+    LOGGED_IN_USERS = new_logged_in_users
+    res = {'loggedInUsers': LOGGED_IN_USERS}
 
     # Broadcast an updated logged_in_users to all clients once
     # a player has logged out
-    socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=False)
+    SOCKET_IO.emit('getLoggedInUsers', res, broadcast=True, include_self=False)
 
 
-@socketio.on('getLoggedInUsers')
+@SOCKET_IO.on('getLoggedInUsers')
 def on_get_users():
-    global logged_in_users
-    res = {'loggedInUsers': logged_in_users}
+    ''' Return a socketio message containing
+    a list of the logged in users '''
+    global LOGGED_IN_USERS
+    res = {'loggedInUsers': LOGGED_IN_USERS}
 
-    socketio.emit('getLoggedInUsers', res, broadcast=True, include_self=True)
+    SOCKET_IO.emit('getLoggedInUsers', res, broadcast=True, include_self=True)
 
 
-@socketio.on('winner')
+@SOCKET_IO.on('winner')
 def on_winner(data):
-    global logged_in_users
+    ''' Update the players' score in the database
+    and emit a socketio message to all clients
+    with the game info '''
+    global LOGGED_IN_USERS
 
     if data['status'] == 'win':
         winner = data['username']
         if data['player'] == 'X':
             # Loser is O which is the second player in the users list
-            loser = logged_in_users[1]['username']
+            loser = LOGGED_IN_USERS[1]['username']
         else:
-            loser = logged_in_users[0]['username']
+            loser = LOGGED_IN_USERS[0]['username']
 
         # Add to the winner's score in db
-        db.session.query(Player).filter_by(username=winner).update(
+        DB.session.query(Player).filter_by(username=winner).update(
             {Player.score: Player.score + 1})
         # Decrement the loser's score in db
-        db.session.query(Player).filter_by(username=loser).update(
+        DB.session.query(Player).filter_by(username=loser).update(
             {Player.score: Player.score - 1})
-        db.session.commit()
+        DB.session.commit()
 
-    socketio.emit('winner', data, broadcast=True, include_self=True)
+    SOCKET_IO.emit('winner', data, broadcast=True, include_self=True)
 
 
-@socketio.on('resetGame')
+@SOCKET_IO.on('resetGame')
 def reset_game():
-    socketio.emit('resetGame', {}, broadcast=True, include_self=True)
+    ''' Emit a socketio message to all clients
+    alerting them that the game should be reset '''
+    SOCKET_IO.emit('resetGame', {}, broadcast=True, include_self=True)
 
 
-@socketio.on('getLeaders')
+@SOCKET_IO.on('getLeaders')
 def get_leaders():
+    ''' Emit a socketio message containig
+    the list of logged in users '''
     res = {
         'allUsers':
-        db.session.query(Player.username,
+        DB.session.query(Player.username,
                          Player.score).order_by(Player.score.desc()).all()
     }
-    socketio.emit('getLeaders', res, room=request.sid)
+    SOCKET_IO.emit('getLeaders', res, room=request.sid)
 
 
-@socketio.on('getLeadersByName')
+@SOCKET_IO.on('getLeadersByName')
 def get_leaders_by_name():
+    ''' Emit a socketio message containig
+    the list of logged in users sorted
+    alphabetically by name'''
     res = {
         'allUsers':
-        db.session.query(Player.username,
+        DB.session.query(Player.username,
                          Player.score).order_by(Player.username).all()
     }
-    socketio.emit('getLeadersByName', res, room=request.sid)
+    SOCKET_IO.emit('getLeadersByName', res, room=request.sid)
 
 
-socketio.run(
-    app,
+SOCKET_IO.run(
+    APP,
     host=os.getenv('IP', '0.0.0.0'),
     port=8081 if os.getenv('C9_PORT') else int(os.getenv('PORT', 8081)),
 )

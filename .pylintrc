@@ -1,0 +1,2 @@
+[MESSAGES CONTROL]
+disable= no-member,wrong-import-position,invalid-envvar-default,too-few-public-methods,global-statement
