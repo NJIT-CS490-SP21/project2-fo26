@@ -3,3 +3,4 @@ flask_socketio
 flask_cors
 flask_sqlalchemy
 psycopg2
+python-dotenv
