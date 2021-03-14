@@ -97,8 +97,7 @@ def on_login(data):
     LOGGED_IN_USERS.append(user_info)
 
     # Check if the username exists in the db
-    exists = DB.session.query(
-        Player.id).filter_by(username=data['username']).first()
+    exists = check_user_exists(data['username'])
 
     if not exists:
         # Create an entry in the db for the username
@@ -110,6 +109,17 @@ def on_login(data):
     # request.sid gets the id of the sender client, and sends the data back
     # to their 'room', which only the sender is apart of
     SOCKET_IO.emit('login', user_info, room=request.sid)
+
+
+def check_user_exists(username):
+    '''
+    Helper function to check if the user exists in the database
+    '''
+    all_players = Player.query.all()
+    for player in all_players:
+        if player.username == username:
+            return True
+    return False
 
 
 def get_user_info(num_players):
@@ -198,14 +208,14 @@ def get_game_status(data, logged_in_users):
 
 
 def update_winner_score(winner):
-    ''' Helper function to increment the winner's score in db'''
+    ''' Helper function to increment the winner's score in db '''
     DB.session.query(Player).filter_by(username=winner).update(
         {Player.score: Player.score + 1})
     DB.session.commit()
 
 
 def update_loser_score(loser):
-    ''' Helper function to decrement the loser's score in db'''
+    ''' Helper function to decrement the loser's score in db '''
     DB.session.query(Player).filter_by(username=loser).update(
         {Player.score: Player.score - 1})
     DB.session.commit()
@@ -224,8 +234,7 @@ def get_leaders():
     the list of logged in users '''
     res = {
         'allUsers':
-        DB.session.query(Player.username,
-                         Player.score).order_by(Player.score.desc()).all()
+        order_by_score()
     }
     SOCKET_IO.emit('getLeaders', res, room=request.sid)
 

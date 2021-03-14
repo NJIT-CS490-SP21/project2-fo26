@@ -6,12 +6,8 @@ export const PlayerSquare = ({ handleBoardChange, value, index }) => {
     handleBoardChange(index);
   };
 
-  const handleKeyPress = (e) => {
-    console.log(e.key);
-  };
-
   return (
-    <div className="box" role="menuitem" tabIndex={0} onClick={onClickBox} onKeyPress={handleKeyPress}>
+    <div className="box" role="menuitem" tabIndex={0} onClick={onClickBox} onKeyPress={null}>
       {value}
     </div>
   );

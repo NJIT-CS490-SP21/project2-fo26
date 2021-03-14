@@ -15,7 +15,6 @@ const Leaderboard = ({ user, socket }) => {
 
   useEffect(() => {
     socket.on('getLeaders', (data) => {
-      console.log(data);
       setLeaders(data.allUsers);
     });
   }, []);
