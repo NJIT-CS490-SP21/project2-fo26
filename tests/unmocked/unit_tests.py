@@ -42,6 +42,8 @@ class GetUserInfoTest(unittest.TestCase):
         for case in self.test_cases:
             actual_result = get_user_info(case[NUMBER_OF_PLAYERS])
             expected_result = case[EXPECTED]
+            print(expected_result)
+            print(actual_result)
             self.assertEqual(len(actual_result), len(expected_result))
             self.assertDictEqual(actual_result, expected_result)
 
@@ -81,6 +83,8 @@ class LogOutUserTest(unittest.TestCase):
         for case in self.test_cases:
             actual_result = remove_logged_out_user(self.logged_in_users, case[USER_ID])
             expected_result = case[EXPECTED]
+            print(expected_result)
+            print(actual_result)
             self.assertEqual(len(actual_result), len(expected_result))
             self.assertListEqual(actual_result, expected_result)
 
@@ -117,6 +121,8 @@ class GetEndOfGameStatusTest(unittest.TestCase):
         for case in self.test_cases:
             actual_result = get_game_status(case[DATA], self.logged_in_users)
             expected_result = case[EXPECTED]
+            print(expected_result)
+            print(actual_result)
             self.assertEqual(len(actual_result), len(expected_result))
             self.assertDictEqual(actual_result, expected_result)
 

@@ -62,7 +62,8 @@ class OrderLeaderBoardByNameTest(unittest.TestCase):
                 
                 actual_result = order_by_name()
                 expected_result = case[EXPECTED]
-                
+                print(expected_result)
+                print(actual_result)
                 self.assertListEqual(actual_result, expected_result)
                 self.assertEqual(len(actual_result), len(expected_result))
 
@@ -109,7 +110,8 @@ class OrderLeaderBoardByScoreTest(unittest.TestCase):
                 
                 actual_result = order_by_score()
                 expected_result = case[EXPECTED]
-                
+                print(expected_result)
+                print(actual_result)
                 self.assertListEqual(actual_result, expected_result)
                 self.assertEqual(len(actual_result), len(expected_result))
 
@@ -149,7 +151,8 @@ class CheckIfUserExistsTest(unittest.TestCase):
                 mock_query.all = self.mock_query_all
                 actual_result = check_user_exists(case[USERNAME])
                 expected_result = case[EXPECTED]
-                
+                print(expected_result)
+                print(actual_result)
                 self.assertEqual(actual_result, expected_result)
 
 if __name__ == '__main__':
