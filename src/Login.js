@@ -58,7 +58,7 @@ const NotLoggedIn = ({ handleLogIn }) => {
   return (
     <div id="login">
       <h1>Enter your username: </h1>
-      <input ref={inputRef} type="text" />
+      <input placeholder="Enter your username" ref={inputRef} type="text" />
       <button type="button" onClick={onLogInClick}>Log in</button>
       <h2>Logging in may take a few seconds...</h2>
     </div>

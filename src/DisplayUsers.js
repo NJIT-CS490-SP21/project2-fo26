@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const DisplayUsers = ({ allUsers }) => (
-  <div id="displayUsers">
+  <div id="displayUsers" data-testid="displayUsers">
     <h1>Players Online:</h1>
-    {allUsers.map((user) => (
-      <div>
+    {allUsers.map((user, index) => (
+      <div key={index}>
         {user.spectator ? (
           <h2>
             Spectator:

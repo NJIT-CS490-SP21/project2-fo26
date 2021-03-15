@@ -1,6 +1,8 @@
 Milestone 1 Readme is [here](https://github.com/NJIT-CS490-SP21/project2-fo26/commit/88ba2fee7bd5b4e29b89eaf994876997fafe423c?short_path=b335630#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5).
 
-# MILESTONE 3 HEROKU LINK: https://rocky-waters-81320.herokuapp.com/
+## MILESTONE 3 HEROKU LINK: https://rocky-waters-81320.herokuapp.com/
+
+# Milestone 2
 
 ## Accessing via Heroku
 
